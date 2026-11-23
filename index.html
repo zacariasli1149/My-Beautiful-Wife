@@ -153,6 +153,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .chip.map { background: color-mix(in srgb, var(--sky) 35%, var(--surface)); color: var(--ink); text-decoration: none; }
 .chip svg { width: 12px; height: 12px; flex: none; }
 .thumb { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; flex: none; background: var(--surface-2); }
+.card.cat-gift .thumb { width: 78px; height: 78px; border-radius: 14px; }
 .check {
   flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--line);
   display: grid; place-items: center; background: var(--surface); transition: background .15s, border-color .15s;
@@ -539,7 +540,7 @@ function card(i, opts = {}) {
   if (i.photos?.length > 1) chips.push(`<span class="chip">${I.photo}${i.photos.length}</span>`);
   (i.tags || []).slice(0, 3).forEach(t => chips.push(`<span class="chip">#${esc(t)}</span>`));
   const checkbox = c.wish ? `<button class="check ${i.done ? 'on' : ''}" data-act="toggle" data-id="${i.id}" aria-label="${i.done ? '改回未完成' : '標記完成'}" data-stop>${I.check}</button>` : '';
-  return `<div class="card ${i.done ? 'done' : ''}" role="button" tabindex="0" data-act="open" data-id="${i.id}">
+  return `<div class="card cat-${i.cat} ${i.done ? 'done' : ''}" role="button" tabindex="0" data-act="open" data-id="${i.id}">
     ${thumb}
     <div class="card-body">
       <div class="card-title">${esc(i.title)} ${i.priority ? `<span class="hearts">${hearts(i.priority)}</span>` : ''}</div>
@@ -683,6 +684,7 @@ function viewProfile() {
 /* ---------- sheets ---------- */
 function renderLayer() {
   const L = $('#layer');
+  if (state.sheet?.mode === 'form' && $('#form')) readForm();
   let html = '';
   if (state.sheet?.mode === 'view') html = sheetView(state.items.get(state.sheet.id));
   else if (state.sheet?.mode === 'form') html = sheetForm();
@@ -740,7 +742,9 @@ function sheetForm() {
       `<button type="button" style="--c:${CATS[k].c}" class="${d.cat === k ? 'on' : ''}" data-act="pickCat" data-cat="${k}">${catMascot(k, 26)}${CATS[k].short}</button>`).join('')}</div></div>
     <div class="field"><label for="f-title">${d.cat === 'info' ? '項目' : '她說的是…'}</label>
       <input id="f-title" type="text" required maxlength="120" value="${esc(d.title)}" placeholder="${esc(c.ph)}"></div>
+    ${d.cat === 'gift' ? formPhotos(d) : ''}
     <div class="field"><label for="f-note">細節</label><textarea id="f-note" maxlength="2000" placeholder="${esc(c.noteph)}">${esc(d.note)}</textarea></div>
+    ${d.cat !== 'gift' ? formPhotos(d) : ''}
     ${f('mood') ? `<div class="field"><span class="lab">她覺得</span><div class="seg">
       <button type="button" class="${d.mood !== 'dislike' ? 'on' : ''}" data-act="mood" data-m="love">喜歡</button>
       <button type="button" class="${d.mood === 'dislike' ? 'on' : ''}" data-act="mood" data-m="dislike">不喜歡（地雷）</button></div></div>` : ''}
@@ -757,6 +761,26 @@ function sheetForm() {
   </form></div>`;
 }
 
+function formPhotos(d) {
+  const gift = d.cat === 'gift';
+  const label = gift ? '款式照片' : '照片（選填）';
+  const hint = gift ? '拍下或截圖她看中的那一款：顏色、型號、尺寸標籤都可以。' : '';
+  if (!state.assets) return `<div class="field"><span class="lab">${label}</span><p class="hint">${state.cloud ? '用擁有者（可編輯）帳號開啟才能上傳照片。' : '照片要連上雲端才能上傳。'}</p></div>`;
+  return `<div class="field"><span class="lab">${label}${state.uploading ? ` · 上傳中 ${state.uploading} 張…` : ''}</span>
+    <div class="photos">
+      ${(d.photos || []).map(p => `<div class="ph"><img src="${photoUrl(p)}" alt="" data-act="light" data-p="${p}">
+        <button type="button" class="rm" data-act="rmDraftPhoto" data-p="${p}" aria-label="移除照片">${I.x}</button></div>`).join('')}
+      <button type="button" class="add" data-act="upload" data-id="__draft__">${I.camera}${gift ? '加上款式照片' : '上傳照片'}</button>
+    </div>${hint ? `<span class="hint">${hint}</span>` : ''}</div>`;
+}
+
+// drop photos uploaded in a form that was cancelled, so they don't take up space
+function discardDraft() {
+  const d = state.draft;
+  if (d?.newUploads?.length && state.assets) d.newUploads.forEach(p => state.assets.delete(p).catch(() => {}));
+  state.draft = null;
+}
+
 function readForm() {
   const d = state.draft; if (!d) return;
   const v = id => { const el = $('#' + id); return el ? el.value : undefined; };
@@ -771,7 +795,7 @@ function readForm() {
 }
 
 function openForm(base) {
-  state.draft = { cat: 'place', title: '', note: '', location: '', price: '', link: '', date: '', yearly: false, priority: 0, tags: [], mood: 'love', ...base };
+  state.draft = { cat: 'place', title: '', note: '', location: '', price: '', link: '', date: '', yearly: false, priority: 0, tags: [], mood: 'love', ...base, photos: [...(base.photos || [])], newUploads: [], removed: [] };
   state.sheet = { mode: 'form' }; state.confirmDel = false;
   renderLayer();
   setTimeout(() => $('#f-title')?.focus({ preventScroll: true }), 60);
@@ -794,10 +818,11 @@ function submitForm() {
     yearly: fields.includes('date') ? !!d.yearly : false,
     mood: fields.includes('mood') ? (d.mood || 'love') : '',
     priority: d.priority || 0, tags: d.tags || [],
-    done: existing?.done || false, doneAt: existing?.doneAt || null, photos: existing?.photos || [],
+    done: existing?.done || false, doneAt: existing?.doneAt || null, photos: d.photos || [],
     example: false, createdAt: existing?.createdAt || now, updatedAt: now,
   };
   saveItem(item);
+  if (state.assets) (d.removed || []).forEach(p => state.assets.delete(p).catch(() => {}));
   state.sheet = d.id ? { mode: 'view', id: item.id } : null; state.draft = null;
   renderLayer();
   toast(d.id ? '已更新' : `記下來了，放在「${CATS[item.cat].name}」`);
@@ -819,6 +844,8 @@ let uploadTarget = null;
 $('#file').addEventListener('change', async e => {
   const files = [...e.target.files]; e.target.value = '';
   const id = uploadTarget; if (!id || !files.length || !state.assets) return;
+  const toDraft = id === '__draft__';
+  const draft = state.draft;
   state.uploading += files.length; renderLayer();
   const added = [];
   for (const f of files) {
@@ -826,12 +853,14 @@ $('#file').addEventListener('change', async e => {
       const { blob, type } = await compress(f);
       const res = await state.assets.upload(blob, { type });
       added.push(res.id);
+      if (toDraft && draft && state.draft === draft) { draft.photos.push(res.id); draft.newUploads.push(res.id); }
+      else if (toDraft) state.assets.delete(res.id).catch(() => {});
     } catch (err) {
       toast(err?.code === 'quota_exceeded' ? '照片空間滿了，刪掉一些舊照片再試' : err?.code === 'unsupported_type' ? '這個檔案格式不支援，換成 JPG 或 PNG 試試' : '有照片沒上傳成功，請再試一次');
     }
     state.uploading--; renderLayer();
   }
-  if (added.length) {
+  if (added.length && !toDraft) {
     const it = state.items.get(id);
     await patchItem(id, { photos: [...(it?.photos || []), ...added] });
     toast(`放好 ${added.length} 張照片了`);
@@ -893,7 +922,14 @@ document.addEventListener('click', e => {
       openForm({ cat, title: el.dataset.title || '' }); break;
     }
     case 'open': state.sheet = { mode: 'view', id }; state.confirmDel = false; renderLayer(); break;
-    case 'close': if (state.sheet?.mode === 'form' && state.draft?.id) { state.sheet = { mode: 'view', id: state.draft.id }; state.draft = null; } else { state.sheet = null; state.draft = null; } renderLayer(); break;
+    case 'close': if (state.sheet?.mode === 'form' && state.draft?.id) { state.sheet = { mode: 'view', id: state.draft.id }; discardDraft(); } else { state.sheet = null; discardDraft(); } renderLayer(); break;
+    case 'rmDraftPhoto': {
+      const d = state.draft, p = el.dataset.p; if (!d) break;
+      readForm(); d.photos = d.photos.filter(x => x !== p);
+      if (d.newUploads.includes(p)) { d.newUploads = d.newUploads.filter(x => x !== p); state.assets?.delete(p).catch(() => {}); }
+      else d.removed.push(p);
+      renderLayer(); break;
+    }
     case 'toggle': {
       e.stopPropagation();
       const it = state.items.get(id); if (!it) break;
@@ -942,7 +978,7 @@ document.addEventListener('input', e => {
   if (e.target.id === 'q') { state.query = e.target.value; render(); }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (state.lightbox) { state.lightbox = null; } else if (state.sheet) { state.sheet = null; state.draft = null; } renderLayer(); }
+  if (e.key === 'Escape') { if (state.lightbox) { state.lightbox = null; } else if (state.sheet) { state.sheet = null; discardDraft(); } renderLayer(); }
   if (e.key === 'Enter' && e.target.classList?.contains('card') ) e.target.click();
 });
 
