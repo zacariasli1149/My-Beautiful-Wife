@@ -1,0 +1,12 @@
+{
+  // name 必須和 Cloudflare 上的 Worker 名稱一致（Workers & Pages 列表裡看得到）
+  "name": "my-beautiful-wife",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "durable_objects": {
+    "bindings": [{ "name": "STORE", "class_name": "SyncStore" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SyncStore"] }],
+  "observability": { "enabled": true }
+}

@@ -287,7 +287,7 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 
 /* toast */
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); z-index: 70;
+  position: fixed; left: 0; right: 0; margin-inline: auto; width: fit-content; z-index: 70;
   bottom: calc(96px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px);
   background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: .86rem;
   display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); animation: up .25s;

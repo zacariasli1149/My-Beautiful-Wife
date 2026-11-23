@@ -1,0 +1,4 @@
+node_modules/
+.wrangler/
+.dev.vars
+老婆的小本本-*.json
