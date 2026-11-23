@@ -361,19 +361,32 @@ const face = (y = 34) => `
   <circle cx="24.9" cy="${y - 0.9}" r=".8" fill="#fff"/><circle cx="40.9" cy="${y - 0.9}" r=".8" fill="#fff"/>
   <ellipse cx="18.5" cy="${y + 5}" rx="3.4" ry="2.2" fill="#FF8FA8" opacity=".55"/><ellipse cx="45.5" cy="${y + 5}" rx="3.4" ry="2.2" fill="#FF8FA8" opacity=".55"/>`;
 const ART = {
-  dog: `<ellipse cx="13" cy="30" rx="7" ry="13" fill="#B47A57" ${S} transform="rotate(18 13 30)"/>
-        <ellipse cx="51" cy="30" rx="7" ry="13" fill="#B47A57" ${S} transform="rotate(-18 51 30)"/>
-        <circle cx="32" cy="35" r="19" fill="#F3D4B2" ${S}/>
-        <ellipse cx="40" cy="31" rx="7" ry="6" fill="#DDB08A"/>
-        ${face(34)}
-        <ellipse cx="32" cy="41" rx="3.6" ry="2.6" fill="#3B2A2E"/>
-        <path d="M28.5 45q3.5 3 7 0" fill="none" stroke="#3B2A2E" stroke-width="1.8" stroke-linecap="round"/>`,
-  bunny: `<ellipse cx="23" cy="15" rx="5.5" ry="13" fill="#FFFFFF" ${S}/><ellipse cx="23" cy="16" rx="2.4" ry="9" fill="#FFC1CF"/>
-          <ellipse cx="41" cy="15" rx="5.5" ry="13" fill="#FFFFFF" ${S}/><ellipse cx="41" cy="16" rx="2.4" ry="9" fill="#FFC1CF"/>
-          <circle cx="32" cy="38" r="18" fill="#FFFFFF" ${S}/>
-          ${face(37)}
-          <path d="M30 42.5h4l-2 2.2z" fill="#FF8FA8"/>
-          <path d="M32 44.7q-2 2.6-4.2 1.4M32 44.7q2 2.6 4.2 1.4" fill="none" stroke="#3B2A2E" stroke-width="1.6" stroke-linecap="round"/>`,
+  /* Dalmatian: white face, black floppy ears, black spots */
+  dog: `<ellipse cx="13" cy="30" rx="7" ry="13" fill="#2B2326" ${S} transform="rotate(18 13 30)"/>
+        <ellipse cx="51" cy="30" rx="7" ry="13" fill="#2B2326" ${S} transform="rotate(-18 51 30)"/>
+        <circle cx="13" cy="33" r="1.8" fill="#FFFFFF"/><circle cx="50" cy="26" r="1.5" fill="#FFFFFF"/>
+        <circle cx="32" cy="35" r="19" fill="#FFFFFF" ${S}/>
+        <circle cx="40.5" cy="32.5" r="6" fill="#2B2326"/>
+        <circle cx="21" cy="24" r="2.4" fill="#2B2326"/><circle cx="31" cy="21" r="1.8" fill="#2B2326"/>
+        <circle cx="17" cy="42" r="1.7" fill="#2B2326"/><circle cx="45" cy="45" r="2.2" fill="#2B2326"/>
+        <circle cx="38" cy="22.5" r="1.4" fill="#2B2326"/><circle cx="25" cy="49" r="1.3" fill="#2B2326"/>
+        <circle cx="24" cy="34" r="2.6" fill="#3B2A2E"/><circle cx="24.9" cy="33.1" r=".8" fill="#fff"/>
+        <circle cx="40" cy="34" r="3.2" fill="#FFFFFF"/><circle cx="40" cy="34" r="2.4" fill="#3B2A2E"/><circle cx="40.8" cy="33.2" r=".8" fill="#fff"/>
+        <ellipse cx="18.5" cy="39" rx="3.4" ry="2.2" fill="#FF8FA8" opacity=".55"/><ellipse cx="45.5" cy="39.5" rx="3" ry="2" fill="#FF8FA8" opacity=".7"/>
+        <ellipse cx="32" cy="41" rx="3.6" ry="2.6" fill="#2B2326"/>
+        <path d="M28.5 45q3.5 3 7 0" fill="none" stroke="#3B2A2E" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M31 46.5q1 3.5 3 0" fill="#FF8FA8" stroke="#3B2A2E" stroke-width="1.2"/>`,
+  /* Black bunny: black fur, pink inner ears, light features */
+  bunny: `<ellipse cx="23" cy="15" rx="5.5" ry="13" fill="#2B2326" ${S}/><ellipse cx="23" cy="16" rx="2.4" ry="9" fill="#F49AB0"/>
+          <ellipse cx="41" cy="15" rx="5.5" ry="13" fill="#2B2326" ${S}/><ellipse cx="41" cy="16" rx="2.4" ry="9" fill="#F49AB0"/>
+          <circle cx="32" cy="38" r="18" fill="#2B2326" ${S}/>
+          <ellipse cx="32" cy="44" rx="7.5" ry="5.5" fill="#463A3E"/>
+          <circle cx="24" cy="37" r="3.6" fill="#FFFFFF"/><circle cx="40" cy="37" r="3.6" fill="#FFFFFF"/>
+          <circle cx="24.4" cy="37.4" r="2.5" fill="#120C0E"/><circle cx="40.4" cy="37.4" r="2.5" fill="#120C0E"/>
+          <circle cx="25.3" cy="36.4" r=".9" fill="#fff"/><circle cx="41.3" cy="36.4" r=".9" fill="#fff"/>
+          <ellipse cx="18" cy="43" rx="3.4" ry="2.2" fill="#FF8FA8" opacity=".8"/><ellipse cx="46" cy="43" rx="3.4" ry="2.2" fill="#FF8FA8" opacity=".8"/>
+          <path d="M30 42.2h4l-2 2.2z" fill="#FF9FB4"/>
+          <path d="M32 44.4q-2 2.6-4.2 1.4M32 44.4q2 2.6 4.2 1.4" fill="none" stroke="#F3DCE2" stroke-width="1.6" stroke-linecap="round"/>`,
   cat: `<path d="M15 26 17 9l12 9z" fill="#F7B26E" ${S}/><path d="M49 26 47 9l-12 9z" fill="#F7B26E" ${S}/>
         <path d="M18.5 20 19 13.5l5 4z" fill="#FFC1CF"/><path d="M45.5 20 45 13.5l-5 4z" fill="#FFC1CF"/>
         <circle cx="32" cy="36" r="19" fill="#F7B26E" ${S}/>
@@ -382,16 +395,19 @@ const ART = {
         <path d="M30 40h4l-2 2z" fill="#FF8FA8"/>
         <path d="M32 42q-2 2.6-4.2 1.4M32 42q2 2.6 4.2 1.4" fill="none" stroke="#3B2A2E" stroke-width="1.6" stroke-linecap="round"/>
         <path d="M9 37h8M9.5 41.5l7.5-2M55 37h-8M54.5 41.5l-7.5-2" stroke="#4B3439" stroke-width="1.4" stroke-linecap="round"/>`,
-  cow: `<path d="M19 18q-5-7 1-11 0 6 4 8z" fill="#F6E2B3" ${S}/><path d="M45 18q5-7-1-11 0 6-4 8z" fill="#F6E2B3" ${S}/>
-        <ellipse cx="10" cy="27" rx="7" ry="4" fill="#FFFFFF" ${S} transform="rotate(-20 10 27)"/>
-        <ellipse cx="54" cy="27" rx="7" ry="4" fill="#FFFFFF" ${S} transform="rotate(20 54 27)"/>
-        <circle cx="32" cy="33" r="18" fill="#FFFFFF" ${S}/>
-        <path d="M17 26q4-9 12-8 1 6-4 9-5 3-8-1z" fill="#3B2A2E"/>
-        <path d="M43 19q6 2 6 8-5 1-7-3z" fill="#3B2A2E"/>
-        <circle cx="24" cy="31" r="2.6" fill="#3B2A2E"/><circle cx="40" cy="31" r="2.6" fill="#3B2A2E"/>
-        <circle cx="24.9" cy="30.1" r=".8" fill="#fff"/><circle cx="40.9" cy="30.1" r=".8" fill="#fff"/>
-        <ellipse cx="32" cy="43" rx="12" ry="8" fill="#FFC6D3" ${S}/>
-        <ellipse cx="27.5" cy="42.5" rx="1.6" ry="2.2" fill="#C2667C"/><ellipse cx="36.5" cy="42.5" rx="1.6" ry="2.2" fill="#C2667C"/>`,
+  /* Highland cow: long sweeping horns, ginger shaggy coat, fringe over the eyes */
+  cow: `<path d="M20 24C12 24 5 20 4 11c4 5 9 7 16 7z" fill="#F3E3C3" ${S}/>
+        <path d="M44 24c8 0 15-4 16-13-4 5-9 7-16 7z" fill="#F3E3C3" ${S}/>
+        <path d="M14 30q-9 0-10 5 6 3 12 0z" fill="#C4703A" ${S}/>
+        <path d="M50 30q9 0 10 5-6 3-12 0z" fill="#C4703A" ${S}/>
+        <path d="M14 33q0-15 18-15t18 15q0 10-4 15H18q-4-5-4-15z" fill="#D07E44" ${S}/>
+        <circle cx="25" cy="35" r="2.3" fill="#3B2A2E"/><circle cx="39" cy="35" r="2.3" fill="#3B2A2E"/>
+        <circle cx="25.8" cy="34.3" r=".7" fill="#fff"/><circle cx="39.8" cy="34.3" r=".7" fill="#fff"/>
+        <path d="M15 29q2-12 17-12t17 12l-3 4-3-3-3 4-3-4-3 4-3-4-3 4-3-4-3 4-3-3z" fill="#B0602C" ${S}/>
+        <path d="M24 22q2 4 1 8M32 20q1 5 0 10M40 22q-2 4-1 8" fill="none" stroke="#8E4A1F" stroke-width="1.4" stroke-linecap="round"/>
+        <ellipse cx="19" cy="40" rx="3" ry="2" fill="#FF8FA8" opacity=".6"/><ellipse cx="45" cy="40" rx="3" ry="2" fill="#FF8FA8" opacity=".6"/>
+        <ellipse cx="32" cy="46" rx="11" ry="7" fill="#F2B9A2" ${S}/>
+        <ellipse cx="27.5" cy="45.5" rx="1.6" ry="2.1" fill="#9A4F3C"/><ellipse cx="36.5" cy="45.5" rx="1.6" ry="2.1" fill="#9A4F3C"/>`,
 };
 function mascot(animal, size = 44, bg = '') {
   return `<span class="m" style="width:${size}px;height:${size}px;${bg ? `background:${bg};padding:${Math.round(size * .08)}px` : ''}" aria-hidden="true"><svg viewBox="0 0 64 64">${ART[animal]}</svg></span>`;
