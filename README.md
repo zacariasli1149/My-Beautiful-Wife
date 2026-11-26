@@ -32,6 +32,7 @@
 3. 設定同步密碼：Cloudflare 後台 → Workers & Pages → 這個 Worker → Settings → Variables and Secrets → Add → 類型選 **Secret**，名稱 `SYNC_PASSWORD`，值至少 8 個字元。
 4. 每台裝置第一次打開 App →「她的檔案」右上角齒輪（或首頁的同步狀態）→ 輸入密碼 →「連線並同步」。
 5. 密碼錯 10 次會鎖 15 分鐘。
+6. 如果 push 之後沒有自動部署：Cloudflare 的 Settings → Builds 出現「disconnected from your Git account」時，到 https://github.com/settings/installations → Cloudflare Workers and Pages → Configure，確認 Repository access 有勾這個 repo。
 
 ## 本機測試
 
