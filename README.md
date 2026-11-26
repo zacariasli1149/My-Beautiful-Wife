@@ -27,7 +27,7 @@
 
 ## 部署與密碼
 
-1. Cloudflare Workers Builds 已連結這個 repo，push 之後重新部署即可（Deploy command：`npx wrangler deploy`）。
+1. Cloudflare Workers Builds 已連結這個 repo，production 分支是 `claude/wife-notes-app-wvv9x3`：push 到這個分支就會自動部署（Deploy command：`npx wrangler deploy`）。
 2. `wrangler.jsonc` 的 `name` 必須和 Cloudflare 上的 Worker 名稱一致（目前是 `my-beautiful-wife`）。
 3. 設定同步密碼：Cloudflare 後台 → Workers & Pages → 這個 Worker → Settings → Variables and Secrets → Add → 類型選 **Secret**，名稱 `SYNC_PASSWORD`，值至少 8 個字元。
 4. 每台裝置第一次打開 App →「她的檔案」右上角齒輪（或首頁的同步狀態）→ 輸入密碼 →「連線並同步」。
