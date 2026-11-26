@@ -211,6 +211,18 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .field input[type=password]:focus { border-color: var(--accent); }
 .btn:disabled { opacity: .6; }
 
+/* country pills */
+.pill-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.pill-row.wrap { flex-wrap: wrap; overflow: visible; }
+.pill {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 99px;
+  background: var(--surface); border: 2px solid var(--line); font-size: .84rem; white-space: nowrap;
+}
+.pill.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.pill .num { font-size: .74rem; color: var(--ink-soft); }
+.flag { font-size: 1.05em; line-height: 1; margin-right: 2px; }
+.big-flag { font-size: 2.4rem; line-height: 1; flex: none; }
+
 /* tab bar */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;

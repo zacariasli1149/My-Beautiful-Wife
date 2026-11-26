@@ -3,9 +3,9 @@
 /* ---------- constants ---------- */
 const CATS = {
   place: { name: '想去的地方', short: '想去', animal: 'dog',   c: 'var(--sky)',   wish: true,
-           ph: '例如：京都嵐山的竹林小徑', noteph: '她怎麼說的？什麼季節想去、想做什麼…', fields: ['location', 'link'] },
+           ph: '例如：京都嵐山的竹林小徑', noteph: '她怎麼說的？什麼季節想去、想做什麼…', fields: ['country', 'location', 'link'] },
   food:  { name: '想吃的美食', short: '想吃', animal: 'bunny', c: 'var(--peach)', wish: true,
-           ph: '例如：信義區那家舒芙蕾鬆餅', noteph: '想點什麼？要不要訂位？', fields: ['location', 'link'] },
+           ph: '例如：信義區那家舒芙蕾鬆餅', noteph: '想點什麼？要不要訂位？', fields: ['country', 'location', 'link'] },
   gift:  { name: '禮物靈感',   short: '禮物', animal: 'cat',   c: 'var(--pink)',  wish: true,
            ph: '例如：櫻花粉色的鑄鐵鍋', noteph: '顏色、尺寸、在哪裡看到的…', fields: ['price', 'link', 'location'] },
   like:  { name: '喜好與地雷', short: '喜好', animal: 'cow',   c: 'var(--lilac)',
@@ -107,9 +107,40 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ''; } catch { return ''; } };
 const mapsUrl = it => {
   if (it.link && /google\.[^/]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps/.test(it.link)) return safeUrl(it.link);
-  const q = (it.location || '').trim() || it.title;
+  let q = (it.location || '').trim() || it.title;
+  if (it.country && !q.includes(it.country)) q += ' ' + (countryInfo(it.country)?.[2] || it.country);
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 };
+/* ---------- countries ---------- */
+const COUNTRIES = [
+  ['台灣', 'TW', 'Taiwan'], ['日本', 'JP', 'Japan'], ['韓國', 'KR', 'Korea'], ['香港', 'HK', 'Hong Kong'], ['澳門', 'MO', 'Macau'],
+  ['中國', 'CN', 'China'], ['泰國', 'TH', 'Thailand'], ['越南', 'VN', 'Vietnam'], ['新加坡', 'SG', 'Singapore'], ['馬來西亞', 'MY', 'Malaysia'],
+  ['印尼', 'ID', 'Indonesia'], ['菲律賓', 'PH', 'Philippines'], ['英國', 'GB', 'United Kingdom'], ['直布羅陀', 'GI', 'Gibraltar'],
+  ['西班牙', 'ES', 'Spain'], ['葡萄牙', 'PT', 'Portugal'], ['法國', 'FR', 'France'], ['義大利', 'IT', 'Italy'], ['德國', 'DE', 'Germany'],
+  ['瑞士', 'CH', 'Switzerland'], ['奧地利', 'AT', 'Austria'], ['荷蘭', 'NL', 'Netherlands'], ['比利時', 'BE', 'Belgium'], ['捷克', 'CZ', 'Czechia'],
+  ['希臘', 'GR', 'Greece'], ['克羅埃西亞', 'HR', 'Croatia'], ['冰島', 'IS', 'Iceland'], ['挪威', 'NO', 'Norway'], ['瑞典', 'SE', 'Sweden'],
+  ['芬蘭', 'FI', 'Finland'], ['丹麥', 'DK', 'Denmark'], ['愛爾蘭', 'IE', 'Ireland'], ['土耳其', 'TR', 'Turkey'], ['摩洛哥', 'MA', 'Morocco'],
+  ['埃及', 'EG', 'Egypt'], ['阿聯酋', 'AE', 'United Arab Emirates'], ['美國', 'US', 'United States'], ['加拿大', 'CA', 'Canada'],
+  ['墨西哥', 'MX', 'Mexico'], ['秘魯', 'PE', 'Peru'], ['澳洲', 'AU', 'Australia'], ['紐西蘭', 'NZ', 'New Zealand'], ['馬爾地夫', 'MV', 'Maldives'],
+];
+const C_ALIASES = { '臺灣': '台灣', '南韓': '韓國', 'UK': '英國', '英格蘭': '英國', '蘇格蘭': '英國', '美國本土': '美國', '杜拜': '阿聯酋', '澳大利亞': '澳洲', '意大利': '義大利' };
+const countryInfo = name => COUNTRIES.find(c => c[0] === name);
+function normCountry(v) {
+  v = (v || '').trim(); if (!v) return '';
+  if (C_ALIASES[v] || C_ALIASES[v.toUpperCase()]) return C_ALIASES[v] || C_ALIASES[v.toUpperCase()];
+  const low = v.toLowerCase();
+  const hit = COUNTRIES.find(c => c[0] === v || c[1].toLowerCase() === low || c[2].toLowerCase() === low);
+  return hit ? hit[0] : v.slice(0, 30);
+}
+const flag = name => { const c = countryInfo(name); return c ? String.fromCodePoint(...[...c[1]].map(ch => 0x1F1A5 + ch.charCodeAt(0))) : ''; };
+const countryLabel = name => `${flag(name) ? `<span class="flag">${flag(name)}</span>` : ''}${esc(name)}`;
+// countries in use (place/food), most-used first
+function usedCountries() {
+  const m = new Map();
+  [...state.items.values()].forEach(i => { if (!i.deleted && i.country && (i.cat === 'place' || i.cat === 'food')) m.set(i.country, (m.get(i.country) || 0) + 1); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+}
+
 const fmtDate = ts => { if (!ts) return ''; const d = new Date(ts); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
 const hearts = n => n ? '♥'.repeat(n) : '';
 function lsGet(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } }
@@ -146,14 +177,14 @@ function removeItem(id) {
 
 /* first launch: a few marked examples (fixed ids/timestamps, so devices never duplicate them) */
 const EXAMPLES = [
-  { id: 'ex1', cat: 'place', title: '京都嵐山竹林小徑', note: '她說秋天楓葉季去最美，想穿和服拍照', location: '嵐山 竹林之道', priority: 3, tags: ['日本', '秋天'] },
-  { id: 'ex2', cat: 'food', title: '舒芙蕾鬆餅', note: '看到 IG 上的影片說好想吃，要點抹茶口味', location: '台北 舒芙蕾鬆餅', priority: 2, tags: ['甜點'] },
+  { id: 'ex1', cat: 'place', title: '京都嵐山竹林小徑', note: '她說秋天楓葉季去最美，想穿和服拍照', location: '嵐山 竹林之道', country: '日本', priority: 3, tags: ['日本', '秋天'] },
+  { id: 'ex2', cat: 'food', title: '舒芙蕾鬆餅', note: '看到 IG 上的影片說好想吃，要點抹茶口味', location: '台北 舒芙蕾鬆餅', country: '台灣', priority: 2, tags: ['甜點'] },
   { id: 'ex3', cat: 'gift', title: '櫻花粉色的鑄鐵鍋', note: '逛百貨時停下來看了很久，說 20 公分剛好', price: '6800', priority: 2, tags: ['廚房'] },
   { id: 'ex4', cat: 'like', title: '喜歡白色小花', note: '滿天星、小蒼蘭都喜歡，玫瑰覺得太隆重', mood: 'love', priority: 1, tags: ['花'] },
   { id: 'ex5', cat: 'like', title: '不吃香菜', note: '點餐記得說「不要香菜」', mood: 'dislike', tags: ['飲食'] },
   { id: 'ex6', cat: 'habit', title: '早上一定先喝一杯溫水' },
   { id: 'ex7', cat: 'info', title: '她的生日（範例日期）', note: '改成真正的生日，首頁就會倒數', date: '1995-12-20', yearly: true },
-  { id: 'ex8', cat: 'food', title: '淡水老街阿給', note: '上次去吃覺得很好吃，還想再去', location: '淡水 老牌阿給', priority: 1, tags: ['小吃'], done: true, doneAt: 1763100000000 },
+  { id: 'ex8', cat: 'food', title: '淡水老街阿給', note: '上次去吃覺得很好吃，還想再去', location: '淡水 老牌阿給', country: '台灣', priority: 1, tags: ['小吃'], done: true, doneAt: 1763100000000 },
 ];
 if (!lsGet(K.seeded, false) && state.items.size === 0) {
   EXAMPLES.forEach((e, n) => state.items.set(e.id, {
@@ -318,7 +349,7 @@ const byCat = k => all().filter(i => i.cat === k);
 const matches = (i, q) => {
   q = q.trim().toLowerCase(); if (!q) return true;
   if (q.startsWith('#')) return (i.tags || []).some(t => t.toLowerCase() === q.slice(1));
-  return [i.title, i.note, i.location, ...(i.tags || []), CATS[i.cat]?.name].join(' ').toLowerCase().includes(q);
+  return [i.title, i.note, i.location, i.country, countryInfo(i.country)?.[2], ...(i.tags || []), CATS[i.cat]?.name].join(' ').toLowerCase().includes(q);
 };
 function upcoming() {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -339,13 +370,13 @@ function render() {
   if (!state.ready) { app.innerHTML = `<div class="loading"><div class="bounce">${mascot('bunny', 64)}</div>小本本打開中…</div>`; return; }
   const v = state.view;
   app.innerHTML = v === 'wish' ? viewWish() : v === 'memories' ? viewMemories() : v === 'profile' ? viewProfile()
-    : v === 'cat' ? viewCat() : viewHome();
+    : v === 'cat' ? viewCat() : v === 'country' ? viewCountry() : viewHome();
   const s = $('#q'); if (s) { s.value = state.query; }
   renderLayer();
 }
 
 function renderTabs() {
-  const t = (v, icon, label) => `<button class="tab ${state.view === v || (v === 'home' && state.view === 'cat') ? 'on' : ''}" data-act="nav" data-v="${v}">${icon}<span>${label}</span></button>`;
+  const t = (v, icon, label) => `<button class="tab ${state.view === v || (v === 'home' && (state.view === 'cat' || state.view === 'country')) ? 'on' : ''}" data-act="nav" data-v="${v}">${icon}<span>${label}</span></button>`;
   $('#tabs').innerHTML = t('home', I.home, '首頁') + t('wish', I.star, '心願清單') +
     `<button class="fab" data-act="add" aria-label="新增一筆">${I.plus}</button>` +
     t('memories', I.photo, '回憶牆') + t('profile', I.heartBook, '她的檔案');
@@ -357,6 +388,7 @@ function card(i, opts = {}) {
   const chips = [];
   if (i.example) chips.push('<span class="chip ex">範例</span>');
   if (opts.showCat) chips.push(`<span class="chip">${c.short}</span>`);
+  if (i.country && !opts.hideCountry) chips.push(`<span class="chip">${countryLabel(i.country)}</span>`);
   if (i.mood === 'dislike') chips.push('<span class="chip bad">地雷</span>');
   if (i.location && (i.cat === 'place' || i.cat === 'food' || i.cat === 'gift'))
     chips.push(`<a class="chip map" href="${esc(mapsUrl(i))}" target="_blank" rel="noopener" data-stop>${I.pin}${esc(i.location)}</a>`);
@@ -418,6 +450,8 @@ function viewHome() {
     <button class="qa" data-act="giftMode">${mascot('cat', 40)}送禮靈感<small>禮物＋她的喜好</small></button>
   </div>
   <section class="section"><div class="sec-head"><h2>分類</h2></div><div class="cats">${tiles}</div></section>
+  ${usedCountries().length ? `<section class="section"><div class="sec-head"><h2>依國家看</h2></div>
+    <div class="pill-row">${usedCountries().map(([n, c]) => `<button class="pill" data-act="openCountry" data-c="${esc(n)}">${countryLabel(n)}<span class="num">${c}</span></button>`).join('')}</div></section>` : ''}
   <section class="section">
     <div class="sec-head"><h2>最近記下的</h2></div>
     ${items.length ? `<div class="list">${items.slice(0, 8).map(i => card(i, { showCat: true })).join('')}</div>`
@@ -433,6 +467,10 @@ function viewCat() {
   const k = state.cat, c = CATS[k];
   if (k === 'giftMode') return viewGift();
   let list = byCat(k);
+  const hasCountry = c.fields.includes('country');
+  const cs = new Map(); let noC = 0;
+  if (hasCountry) list.forEach(i => { if (i.country) cs.set(i.country, (cs.get(i.country) || 0) + 1); else noC++; });
+  if (hasCountry && state.ctry) list = list.filter(i => state.ctry === '__none__' ? !i.country : i.country === state.ctry);
   const total = list.length, done = list.filter(i => i.done).length;
   if (c.wish) list = list.filter(i => state.filter === 'all' ? true : state.filter === 'done' ? i.done : !i.done);
   if (c.wish && state.filter === 'todo') list.sort((a, b) => (b.priority || 0) - (a.priority || 0) || (b.createdAt || 0) - (a.createdAt || 0));
@@ -442,9 +480,30 @@ function viewCat() {
     ${catMascot(k, 48)}<div><h1>${c.name}</h1><p class="num">${c.wish ? `完成 ${done} / ${total}` : `${total} 筆`}</p></div></div>
   ${c.wish ? `<div class="seg">${[['todo', '還沒完成'], ['done', '已完成'], ['all', '全部']].map(([f, l]) =>
     `<button class="${state.filter === f ? 'on' : ''}" data-act="filter" data-f="${f}">${l}</button>`).join('')}</div>` : ''}
-  ${list.length ? `<div class="list">${list.map(i => card(i)).join('')}</div>`
+  ${hasCountry && cs.size ? `<div class="pill-row">
+    <button class="pill ${!state.ctry ? 'on' : ''}" data-act="ctry" data-c="">全部國家</button>
+    ${[...cs.entries()].sort((a, b) => b[1] - a[1]).map(([n, m]) => `<button class="pill ${state.ctry === n ? 'on' : ''}" data-act="ctry" data-c="${esc(n)}">${countryLabel(n)}<span class="num">${m}</span></button>`).join('')}
+    ${noC ? `<button class="pill ${state.ctry === '__none__' ? 'on' : ''}" data-act="ctry" data-c="__none__">未設定<span class="num">${noC}</span></button>` : ''}
+  </div>` : ''}
+  ${list.length ? `<div class="list">${list.map(i => card(i, { hideCountry: !!state.ctry })).join('')}</div>`
     : `<div class="empty">${catMascot(k, 60)}<b>${state.filter === 'done' && c.wish ? '還沒有完成的項目' : '這裡還沒有東西'}</b>${c.ph.replace('例如：', '像是 ')}</div>`}
-  <button class="btn ghost" data-act="add" data-cat="${k}">${I.plus}新增到「${c.name}」</button>`;
+  <button class="btn ghost" data-act="add" data-cat="${k}" ${state.ctry && state.ctry !== '__none__' ? `data-country="${esc(state.ctry)}"` : ''}>${I.plus}新增到「${c.name}」${state.ctry && state.ctry !== '__none__' ? `（${esc(state.ctry)}）` : ''}</button>`;
+}
+
+function viewCountry() {
+  const n = state.country;
+  const inC = k => byCat(k).filter(i => i.country === n).sort((a, b) => (a.done - b.done) || (b.priority || 0) - (a.priority || 0) || (b.createdAt || 0) - (a.createdAt || 0));
+  const places = inC('place'), foods = inC('food');
+  const left = [...places, ...foods].filter(i => !i.done).length;
+  const sec = (k, l) => `<section class="section"><div class="sec-head"><h2>${CATS[k].name}（${l.length}）</h2>
+      <button data-act="add" data-cat="${k}" data-country="${esc(n)}">＋新增</button></div>
+    ${l.length ? `<div class="list">${l.map(i => card(i, { hideCountry: true })).join('')}</div>`
+      : `<div class="empty">${catMascot(k, 48)}還沒有${k === 'place' ? '想去的地方' : '想吃的東西'}</div>`}</section>`;
+  return `
+  <div class="vhead"><button class="back" data-act="nav" data-v="home" aria-label="回首頁">${I.back}</button>
+    <span class="big-flag">${flag(n) || mascot('dog', 44)}</span>
+    <div><h1>${esc(n)}</h1><p class="num">${left ? `還有 ${left} 個心願等著實現` : '這個國家的心願都完成了'}</p></div></div>
+  ${sec('place', places)}${sec('food', foods)}`;
 }
 
 function viewGift() {
@@ -528,6 +587,7 @@ function sheetView(i) {
   if (!i || i.deleted) return '';
   const c = CATS[i.cat] || CATS.like;
   const rows = [];
+  if (i.country) rows.push(['國家', countryLabel(i.country)]);
   if (i.location) rows.push(['地點', esc(i.location)]);
   if (i.price) rows.push(['預算', `<span class="num">$${esc(i.price)}</span>`]);
   if (i.date) rows.push(['日期', `<span class="num">${esc(i.date.replace(/-/g, '/'))}</span>${i.yearly ? '（每年提醒）' : ''}`]);
@@ -576,6 +636,7 @@ function sheetForm() {
     ${f('mood') ? `<div class="field"><span class="lab">她覺得</span><div class="seg">
       <button type="button" class="${d.mood !== 'dislike' ? 'on' : ''}" data-act="mood" data-m="love">喜歡</button>
       <button type="button" class="${d.mood === 'dislike' ? 'on' : ''}" data-act="mood" data-m="dislike">不喜歡（地雷）</button></div></div>` : ''}
+    ${f('country') ? countryField(d) : ''}
     ${f('location') ? `<div class="field"><label for="f-loc">地點或店名</label><input id="f-loc" type="text" maxlength="200" value="${esc(d.location)}" placeholder="例如：京都 嵐山 竹林之道">
       <span class="hint">會用這個在 Google 地圖搜尋；也可以在下方貼上 Google 地圖分享連結。</span></div>` : ''}
     ${f('price') ? `<div class="field"><label for="f-price">大概價格</label><input id="f-price" type="text" inputmode="numeric" maxlength="20" value="${esc(d.price)}" placeholder="例如：3200"></div>` : ''}
@@ -589,6 +650,14 @@ function sheetForm() {
   </form></div>`;
 }
 
+function countryField(d) {
+  const used = usedCountries().map(x => x[0]);
+  const picks = [...new Set([...(d.country ? [d.country] : []), ...used, '台灣', '日本', '韓國'])].slice(0, 8);
+  return `<div class="field"><label for="f-country">國家</label>
+    <div class="pill-row wrap">${picks.map(n => `<button type="button" class="pill ${d.country === n ? 'on' : ''}" data-act="pickCountry" data-c="${esc(n)}">${countryLabel(n)}</button>`).join('')}</div>
+    <input id="f-country" type="text" list="countryList" maxlength="30" value="${esc(d.country || '')}" placeholder="其他國家：輸入或從清單選">
+    <datalist id="countryList">${COUNTRIES.map(c => `<option value="${c[0]}">${c[2]}</option>`).join('')}</datalist></div>`;
+}
 function formPhotos(d) {
   const gift = d.cat === 'gift';
   const label = gift ? '款式照片' : '照片（選填）';
@@ -614,6 +683,7 @@ function readForm() {
   if ($('#f-title')) d.title = v('f-title');
   if ($('#f-note')) d.note = v('f-note');
   if ($('#f-loc')) d.location = v('f-loc');
+  if ($('#f-country')) d.country = v('f-country');
   if ($('#f-price')) d.price = v('f-price');
   if ($('#f-link')) d.link = v('f-link');
   if ($('#f-date')) d.date = v('f-date');
@@ -622,7 +692,7 @@ function readForm() {
 }
 
 function openForm(base) {
-  state.draft = { cat: 'place', title: '', note: '', location: '', price: '', link: '', date: '', yearly: false, priority: 0, tags: [], mood: 'love', ...base, photos: [...(base.photos || [])], newUploads: [], removed: [] };
+  state.draft = { cat: 'place', title: '', note: '', location: '', country: '', price: '', link: '', date: '', yearly: false, priority: 0, tags: [], mood: 'love', ...base, photos: [...(base.photos || [])], newUploads: [], removed: [] };
   state.sheet = { mode: 'form' }; state.confirmDel = false;
   renderLayer();
   setTimeout(() => $('#f-title')?.focus({ preventScroll: true }), 60);
@@ -639,6 +709,7 @@ function submitForm() {
     ...(existing || {}),
     id: d.id || uid(), cat: d.cat, title: d.title.trim(), note: (d.note || '').trim(),
     location: fields.includes('location') ? (d.location || '').trim() : '',
+    country: fields.includes('country') ? normCountry(d.country) : '',
     price: fields.includes('price') ? (d.price || '').trim() : '',
     link: fields.includes('link') ? safeUrl((d.link || '').trim()) : '',
     date: fields.includes('date') ? (d.date || '') : '',
@@ -771,14 +842,19 @@ function celebrate(x, y) {
 
 /* ---------- navigation ---------- */
 function go(view, cat) {
-  state.view = view; state.cat = cat || null; state.filter = 'todo'; state.query = view === 'home' ? state.query : '';
-  const h = view === 'cat' ? 'cat-' + cat : view;
+  state.view = view; state.filter = 'todo'; state.ctry = null; state.query = view === 'home' ? state.query : '';
+  if (view === 'country') { state.country = cat; state.cat = null; } else state.cat = cat || null;
+  const code = view === 'country' ? countryInfo(cat)?.[1] : '';
+  const h = view === 'cat' ? 'cat-' + cat : view === 'country' ? (code ? 'country-' + code.toLowerCase() : 'country') : view;
   if (location.hash.slice(1) !== h) { try { history.pushState(null, '', '#' + h); } catch { location.hash = h; } }
   render(); window.scrollTo(0, 0);
 }
 function fromHash() {
   const h = location.hash.slice(1);
+  state.ctry = null;
   if (h.startsWith('cat-') && (CATS[h.slice(4)] || h === 'cat-giftMode')) { state.view = 'cat'; state.cat = h.slice(4); }
+  else if (h.startsWith('country-') && COUNTRIES.some(c => c[1] === h.slice(8).toUpperCase())) { state.view = 'country'; state.country = COUNTRIES.find(c => c[1] === h.slice(8).toUpperCase())[0]; }
+  else if (h === 'country' && state.country) { state.view = 'country'; }
   else if (['home', 'wish', 'memories', 'profile'].includes(h)) { state.view = h; state.cat = null; }
   else { state.view = 'home'; state.cat = null; }
 }
@@ -814,11 +890,19 @@ document.addEventListener('click', e => {
     case 'exportJson': exportJson(); break;
     case 'importJson': $('#jsonFile').click(); break;
     case 'openCat': go('cat', el.dataset.cat); break;
+    case 'openCountry': go('country', el.dataset.c); break;
+    case 'ctry': state.ctry = el.dataset.c || null; render(); break;
+    case 'pickCountry': {
+      readForm(); state.draft.country = state.draft.country === el.dataset.c ? '' : el.dataset.c;
+      const inp = $('#f-country'); if (inp) inp.value = state.draft.country;
+      renderLayer(); break;
+    }
     case 'giftMode': go('cat', 'giftMode'); break;
     case 'filter': state.filter = el.dataset.f; render(); break;
     case 'add': {
       let cat = el.dataset.cat || (state.view === 'cat' && CATS[state.cat] ? state.cat : state.view === 'profile' ? 'info' : 'place');
-      openForm({ cat, title: el.dataset.title || '' }); break;
+      const country = el.dataset.country || (state.view === 'country' ? state.country : '');
+      openForm({ cat, title: el.dataset.title || '', country }); break;
     }
     case 'open': state.sheet = { mode: 'view', id }; state.confirmDel = false; renderLayer(); break;
     case 'close': if (state.sheet?.mode === 'form' && state.draft?.id) { state.sheet = { mode: 'view', id: state.draft.id }; discardDraft(); } else { state.sheet = null; discardDraft(); } renderLayer(); break;
